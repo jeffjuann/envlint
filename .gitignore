@@ -1,0 +1,8 @@
+
+# Target directory for compiled files
+/target
+
+# .env file and .env.template or .env.example in root directory (local env files used for development)
+/.env
+/.env.template
+/.env.example
