@@ -29,14 +29,14 @@ impl Variable
   pub fn new() -> Self
   {
     Variable {
-      key: "".to_string(),
-      title: "".to_string(),
-      description: "".to_string(),
+      key: String::new(),
+      title: String::new(),
+      description: String::new(),
       required: false,
       env_type: VariableType::Unknown,
       regex: Regex::new("").unwrap(),
       range: VariableRangeList::new(),
-      value: "".to_string(),
+      value: String::new(),
     }
   }
 
@@ -93,7 +93,7 @@ impl VariableRangeList
   pub fn new() -> Self
   {
     VariableRangeList {
-      raw: "".to_string(),
+      raw: String::new(),
       ranges: Vec::new(),
     }
   }
@@ -160,12 +160,12 @@ impl ToString for VariableTag
   {
     match self
     {
-      VariableTag::Title => "title".to_string(),
-      VariableTag::Description => "description".to_string(),
-      VariableTag::Required => "required".to_string(),
-      VariableTag::Type => "type".to_string(),
-      VariableTag::Regex => "regex".to_string(),
-      VariableTag::Range => "range".to_string(),
+      VariableTag::Title => String::from("title"),
+      VariableTag::Description => String::from("description"),
+      VariableTag::Required => String::from("required"),
+      VariableTag::Type => String::from("type"),
+      VariableTag::Regex => String::from("regex"),
+      VariableTag::Range => String::from("range"),
     }
   }
 }

@@ -23,8 +23,8 @@ enum Subcommands
 }
 
 #[derive(Parser, Debug)]
-pub struct LintFlags {
-
+pub struct LintFlags
+{
   #[arg(
     short, 
     long,
@@ -46,14 +46,16 @@ pub fn run() -> io::Result<()>
 {
   let cli = Cli::parse();
   
-  match  cli.command
+  match cli.command
   {
-    Some(Subcommands::Lint(flags)) => {
+    Some(Subcommands::Lint(flags)) =>
+    {
       let start_time = Instant::now();
       commands::lint::lint(&flags)?;
       println!("elapsed in: {:?}", start_time.elapsed());
     },
-    None => {
+    None =>
+    {
       println!("Welcome to {} v{}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
       println!("No command provided. Use --help to see available commands.");
     }

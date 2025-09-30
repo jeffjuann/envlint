@@ -2,7 +2,8 @@
 #[macro_export]
 macro_rules! emit_error 
 {
-  ($($arg:tt)*) => {
+  ($($arg:tt)*) => 
+  {
     println!("{}{} {}", 
       crate::utils::colorize(colored::Color::Red, "error"),
       crate::utils::colorize(colored::Color::BrightWhite, ":"),
@@ -15,7 +16,8 @@ macro_rules! emit_error
 #[macro_export]
 macro_rules! emit_warn 
 {
-  ($($arg:tt)*) => {
+  ($($arg:tt)*) => 
+  {
     println!("{}{} {}", 
       crate::utils::colorize(colored::Color::Yellow, "warn"),
       crate::utils::colorize(colored::Color::BrightWhite, ":"),
@@ -27,7 +29,8 @@ macro_rules! emit_warn
 #[macro_export]
 macro_rules! emit_info 
 {
-  ($($arg:tt)*) => {
+  ($($arg:tt)*) => 
+  {
     println!("{}{} {}",
       crate::utils::colorize(colored::Color::Blue, "info"),
       crate::utils::colorize(colored::Color::BrightWhite, ":"),
@@ -37,8 +40,10 @@ macro_rules! emit_info
 }
 
 #[macro_export]
-macro_rules! emit_success {
-  ($($arg:tt)*) => {
+macro_rules! emit_success 
+{
+  ($($arg:tt)*) => 
+  {
     println!("{}{} {}",
       crate::utils::colorize(colored::Color::Green, "success"),
       crate::utils::colorize(colored::Color::BrightWhite, ":"),

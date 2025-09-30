@@ -20,7 +20,8 @@ fn main() -> io::Result<()>
 
   match result
   {
-    Ok(_) => {
+    Ok(_) =>
+    {
       process::exit(0);
     },
     Err(e) => 

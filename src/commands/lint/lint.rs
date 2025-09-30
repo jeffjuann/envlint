@@ -14,23 +14,16 @@ use crate::common::{FileLine, VariableCollection};
 
 pub fn lint(lint_flags: &LintFlags) -> io::Result<()>
 {
-  let cwd = if let Ok(cwd) = current_dir() {
-    cwd
-  } else {
+  if current_dir().is_err()
+  {
     emit_error!("Unable to access current directory");
-  };
+  }
 
-  let mut env_template_file_name = if let Some(template) = &lint_flags.template {
-    template
-  } else {
-    ".env.template"
-  };
+  let cwd = current_dir().unwrap();
 
-  let env_file_name = if let Some(file) = &lint_flags.file {
-    file
-  } else {
-    ".env"
-  };
+  let mut env_template_file_name = if let Some(template) = &lint_flags.template { template } else { ".env.template" };
+
+  let env_file_name = if let Some(file) = &lint_flags.file { file } else { ".env" };
 
   let mut env_template_file_path = cwd.join(env_template_file_name);
   let env_file_path = cwd.join(env_file_name);
@@ -53,7 +46,6 @@ pub fn lint(lint_flags: &LintFlags) -> io::Result<()>
       env_template_file_path = env_file_path.clone();
     }
   }
-
   
   emit_info!("checking environment variables template in file '{}'", &env_template_file_name);
 

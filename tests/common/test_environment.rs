@@ -124,7 +124,7 @@ impl TestEnvironment
 
     self.print_outputs();
 
-    if expected_output.trim() == ""
+    if expected_output.trim().is_empty()
     {
       assert_eq!(expected_status, self.is_success());
     }

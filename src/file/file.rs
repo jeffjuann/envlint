@@ -14,7 +14,7 @@ pub fn check_file_in_directory(file_name: &PathBuf) -> bool
 
       if file_path.exists()
       {
-        return true
+        return true;
       }
       else
       {
