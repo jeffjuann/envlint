@@ -16,7 +16,7 @@ pub fn build_env(variable: &HashMap<String, (String, u16)>, line_index: u16) -> 
   {
     Some((key_str, line_index)) => 
     {
-      if key_str == ""
+      if key_str.is_empty()
       {
         emit_error!("Variable key is empty at line {}", line_index);
       }
@@ -34,14 +34,8 @@ pub fn build_env(variable: &HashMap<String, (String, u16)>, line_index: u16) -> 
 
   env.set_value(match variable.get("value")
   {
-    Some((value, _)) => 
-    {
-      value.to_string()
-    },
-    None =>
-    {
-      "".to_string()
-    }
+    Some((value, _)) => value.to_string(),
+    None => String::new()
   });
 
   // if variable only has a key and value, skip the rest of the checks
@@ -54,7 +48,7 @@ pub fn build_env(variable: &HashMap<String, (String, u16)>, line_index: u16) -> 
   {
     Some((title_str, line_index)) => 
     {
-      if title_str == ""
+      if title_str.is_empty()
       {
         emit_warn!("Variable '{}' has an empty title at line {}", env.key, line_index);
       }
@@ -63,7 +57,7 @@ pub fn build_env(variable: &HashMap<String, (String, u16)>, line_index: u16) -> 
     None =>
     {
       emit_warn!("Variable '{}' is missing a title", env.key);
-      "".to_string()
+      String::new()
     }
   });
 
@@ -71,7 +65,7 @@ pub fn build_env(variable: &HashMap<String, (String, u16)>, line_index: u16) -> 
   {
     Some((description_str, line_index)) => 
     {
-      if description_str == ""
+      if description_str.is_empty()
       {
         emit_warn!("Variable '{}' has an empty description at line {}", env.key, line_index);
       }
@@ -80,7 +74,7 @@ pub fn build_env(variable: &HashMap<String, (String, u16)>, line_index: u16) -> 
     None =>
     {
       emit_warn!("Variable '{}' is missing a description", env.key);
-      "".to_string()
+      String::new()
     }
   });
 
@@ -88,7 +82,7 @@ pub fn build_env(variable: &HashMap<String, (String, u16)>, line_index: u16) -> 
   {
     Some((required_str, line_index)) => 
     {
-      if required_str == "true" || required_str == ""
+      if required_str == "true" || required_str.is_empty()
       {
         true
       }
@@ -99,14 +93,10 @@ pub fn build_env(variable: &HashMap<String, (String, u16)>, line_index: u16) -> 
       else
       {
         emit_warn!("Variable '{}' has an invalid required value '{}' at line {}. expected 'true' or 'false', consider removing the flag if it's not needed.", env.key, required_str, line_index);
-        
         true
       }
     },
-    None =>
-    {
-      false
-    }
+    None => false
   });
   
   env.set_env_type(match variable.get("type")
@@ -155,10 +145,7 @@ pub fn build_env(variable: &HashMap<String, (String, u16)>, line_index: u16) -> 
 
   env.set_range(match variable.get("range")
   {
-    Some((range_str, line_index)) =>
-    {
-      process_range(&env, range_str, line_index)
-    },
+    Some((range_str, line_index)) => process_range(&env, range_str, line_index),
     None => VariableRangeList::new()
   });
 
@@ -173,13 +160,15 @@ fn process_range(env: &Variable, range_str: &str, line_index: &u16) -> VariableR
     emit_info!("Variable '{}' has a range but is not an 'integer' or 'float'", env.key);
     range
   }
-  else if range_str == "" 
+  else if range_str.is_empty() 
   {
     emit_warn!("Variable '{}' has an empty range", env.key);
     range
   }
   else
   { 
+    range.raw = range_str.to_string();
+
     if !RANGE_MATCHER.is_match(range_str) {
       emit_error!("Variable '{}' has an invalid range '{}' at line {}", env.key, range_str, line_index);
     }
@@ -195,28 +184,28 @@ fn process_range(env: &Variable, range_str: &str, line_index: &u16) -> VariableR
       if range_values.len() == 1
       {
         // single value
-        let value = range_values[0].trim().to_string();
+        let value = range_values[0].trim();
         if value.is_empty()
         {
           emit_warn!("Variable '{}' has an empty range value", env.key);
         }
         else
         {
-          range.ranges.push(VariableRange::new(value.clone(), value))
+          range.ranges.push(VariableRange::new(value.to_string(), value.to_string()))
         }
       }
       else if range_values.len() == 2
       {
         // range
-        let min = range_values[0].trim().to_string();
-        let max = range_values[1].trim().to_string();
+        let min = range_values[0].trim();
+        let max = range_values[1].trim();
         if min.is_empty() || max.is_empty()
         {
           emit_warn!("Variable '{}' has an empty range value", env.key);
         }
         else
         {
-          range.ranges.push(VariableRange::new(min, max));
+          range.ranges.push(VariableRange::new(min.to_string(), max.to_string()));
         }
       }
       else
@@ -228,8 +217,6 @@ fn process_range(env: &Variable, range_str: &str, line_index: &u16) -> VariableR
     if range.ranges.is_empty() {
       emit_warn!("Variable '{}' has an empty range", env.key);
     }
-
-    range.raw = range_str.to_string();
 
     range
   }

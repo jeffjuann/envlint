@@ -7,21 +7,25 @@ pub struct VariableCollection
 
 impl VariableCollection 
 {
-  pub fn new() -> Self {
+  pub fn new() -> Self
+  {
     VariableCollection {
       variables: Vec::new(),
     }
   }
 
-  pub fn iter(&self) -> impl Iterator<Item = &Variable> {
+  pub fn iter(&self) -> impl Iterator<Item = &Variable>
+  {
     self.variables.iter()
   }
 
-  pub fn add(&mut self, value: Variable) {
+  pub fn add(&mut self, value: Variable)
+  {
     self.variables.push(value);
   }
 
-  pub fn get(&self, key: &str) -> Option<&Variable> {
+  pub fn get(&self, key: &str) -> Option<&Variable>
+  {
     self.variables.iter().find(|x| x.key == key)
   }
 
@@ -37,8 +41,10 @@ impl VariableCollection
     return false;
   }
 
-  pub fn remove(&mut self, key: &str) {
-    if let Some(index) = self.variables.iter().position(|env| env.key == key) {
+  pub fn remove(&mut self, key: &str)
+  {
+    if let Some(index) = self.variables.iter().position(|env| env.key == key)
+    {
       self.variables.remove(index);
     }
   }

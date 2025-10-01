@@ -18,13 +18,10 @@ pub fn validate_variable(
     let variable_value = match variable_value_unwrapped
     {
       Some(variable) => variable.value.clone(),
-      None =>
-      {
-        "".to_string()
-      },
+      None => String::new(),
     };
 
-    if variable_value.trim() == ""
+    if variable_value.trim().is_empty()
     {
       if variable.required == true
       {
@@ -70,7 +67,7 @@ fn validate_boolean_value(value: &str, key: &str)
 /// Valodate the string value
 fn validate_string_value(value: &str, regex: &Regex, key: &str)
 {
-  if regex.as_str() != ""
+  if !regex.as_str().is_empty()
   {
     if !regex.is_match(value)
     {

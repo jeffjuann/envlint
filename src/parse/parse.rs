@@ -64,8 +64,8 @@ pub fn parse_variables(env_file_content: &Vec<FileLine>, template: bool) -> io::
     {
       let (env_key, env_value) = parse_env_line(&line, line_index);
 
-      current_env.insert("key".to_string(), (env_key, line_index));
-      current_env.insert("value".to_string(), (env_value, line_index));
+      current_env.insert(String::from("key"), (env_key, line_index));
+      current_env.insert(String::from("value"), (env_value, line_index));
     }
   }
 
@@ -148,21 +148,21 @@ pub fn parse_env_line(line: &str, line_index: u16) -> (String, String)
     
     let env_key: String = captures.get(1).map_or("", |m| m.as_str()).to_string();
 
-    if env_key == ""
+    if env_key.is_empty()
     {
       emit_error!("Invalid syntax at line: {}", line_index);
     }
     
     let mut env_value: String = captures.get(2).map_or("", |m| m.as_str()).to_string();
 
-    if env_value == ""
+    if env_value.is_empty()
     {
       env_value = captures.get(3).map_or("", |m| m.as_str()).to_string();
     }
 
     return (env_key, env_value);
   }
-  return ("".to_string(), "".to_string());
+  return (String::new(), String::new());
 }
 
 fn parse_tag_matcher(captures: Captures<'_>, line_index: u16) -> (VariableTag, &str)
@@ -172,7 +172,7 @@ fn parse_tag_matcher(captures: Captures<'_>, line_index: u16) -> (VariableTag, &
 
   let mut value: &str = captures.get(2).map_or("", |m| m.as_str());
 
-  if value == ""
+  if value.is_empty()
   {
     value = captures.get(3).map_or("", |m| m.as_str());
   }
