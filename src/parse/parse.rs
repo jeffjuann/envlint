@@ -10,7 +10,7 @@ use super::{builder::build_env};
 
 use once_cell::sync::Lazy;
 
-pub static TAG_MATCHER: Lazy<Regex> = Lazy::new(|| Regex::new(r#"#\[(\w+)\]\s*=?\s*(?:"([^"]*)"|(.*))$"#).unwrap());
+pub static TAG_MATCHER: Lazy<Regex> = Lazy::new(|| Regex::new(r#"^#\[(\w+)\]\s*=?\s*(?:"([^"]*)"|(.*))$"#).unwrap());
 
 pub static ENV_MATCHER: Lazy<Regex> = Lazy::new(|| Regex::new(r#"^\s*([A-Za-z0-9_]+)\s*=\s*(?:"([\s\S]*)"|([\s\S]*))$"#).unwrap());
 
@@ -25,7 +25,7 @@ pub fn parse_variables(env_file_content: &Vec<FileLine>, template: bool) -> io::
   for line in env_file_content
   {
     line_index = line.index;
-    let line = line.line.as_str();
+    let line = line.line.as_str().trim();
     let linetype = check_line(&line);
     if linetype == LineType::Empty || linetype == LineType::Comment || linetype == LineType::Invalid
     {
@@ -89,14 +89,12 @@ pub fn parse_variables(env_file_content: &Vec<FileLine>, template: bool) -> io::
 
 
 
-pub fn check_line(mut line: &str) -> LineType
+pub fn check_line(line: &str) -> LineType
 {
-  line = line.trim();
   if line.is_empty()
   {
     return LineType::Empty;
   }
-  
   if TAG_MATCHER.is_match(line)
   {
     return LineType::Tag;
@@ -107,7 +105,7 @@ pub fn check_line(mut line: &str) -> LineType
     return LineType::Env;
   }
 
-  if COMMENT_MATCHER.is_match(line.trim())
+  if COMMENT_MATCHER.is_match(line)
   {
     return LineType::Comment;
   }
