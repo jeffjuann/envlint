@@ -53,3 +53,29 @@ fn should_error_when_invalid_tag()
   let mut test_environment = TestEnvironment::new();
   test_environment.test_lint(env_content, template_env_content, &[], expected_status, expected_output);
 }
+
+#[test]
+fn should_success_skip_commented_tag_configuration()
+{
+  let expected_status = true;
+  let expected_output = "";
+
+  let template_env_content = r#"
+    #[title]="this is a title"
+    #[description]="This is a description"
+    #[type]=string
+    EXAMPLE_ENV=
+    
+    ##[title]="this is a example env two"
+    ##[description]="This is a description for example env two"
+    ##[type]=string
+    #EXAMPLE_ENV_TWO=
+  "#;
+
+  let env_content = r#"
+    EXAMPLE_ENV="example"
+  "#;
+
+  let mut test_environment = TestEnvironment::new();
+  test_environment.test_lint(env_content, template_env_content, &[], expected_status, expected_output);
+}
