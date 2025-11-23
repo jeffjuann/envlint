@@ -34,21 +34,8 @@ pub fn parse_variables(env_file_content: &Vec<FileLine>, template: bool) -> io::
         emit_error!("Invalid syntax at line: {}", line_index);
       }
 
-      if current_env.is_empty()
-      {
-        continue;
-      }
-      else 
+      if !current_env.is_empty()
       {  
-        let env = build_env(&current_env, line_index-1);
-        
-        if environment_variables.contains_key(&env.key)
-        {
-          emit_warn!("Variable '{}' is defined more than once at line {}", env.key, line_index-1);
-          environment_variables.remove(&env.key);
-        }
-
-        environment_variables.add(env);
         current_env.clear();
       }
     }
@@ -66,6 +53,17 @@ pub fn parse_variables(env_file_content: &Vec<FileLine>, template: bool) -> io::
 
       current_env.insert(String::from("key"), (env_key, line_index));
       current_env.insert(String::from("value"), (env_value, line_index));
+    
+      let env = build_env(&current_env, line_index);
+      
+      if environment_variables.contains_key(&env.key)
+      {
+        emit_warn!("Variable '{}' is defined more than once at line {}", env.key, line_index);
+        environment_variables.remove(&env.key);
+      }
+
+      environment_variables.add(env);
+      current_env.clear();
     }
   }
 
