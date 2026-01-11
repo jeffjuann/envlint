@@ -70,3 +70,11 @@ optional. only for integer and float types. range can be one of the following:
 - `1.1..12.12`
 - `1.1,2.2,3.3,4.4,5.5`
 - `1.1,3.3,5.5,6.6..10.10,11.11,13.13,15.15,16.16..20.20`
+
+### #[default]
+
+```
+  #[default]=<default>
+```
+
+optional. default value of the variable.
