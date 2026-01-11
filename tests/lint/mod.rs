@@ -14,3 +14,5 @@ mod type_tag;
 mod regex_tag;
 
 mod range_tag;
+
+mod default_tag;

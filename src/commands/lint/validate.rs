@@ -4,7 +4,21 @@ use regex::Regex;
 
 use crate::emit_error;
 
-use crate::common::{VariableCollection, VariableRangeList, VariableType};
+use crate::common::{Variable, VariableCollection, VariableRangeList, VariableType};
+
+pub enum ValueKind {
+  Value,
+  DefaultValue,
+}
+
+impl ValueKind {
+  fn as_str(&self) -> &'static str {
+    match self {
+      ValueKind::Value => "value",
+      ValueKind::DefaultValue => "default value",
+    }
+  }
+}
 
 pub fn validate_variable(
   env_filename: &str, 
@@ -13,78 +27,88 @@ pub fn validate_variable(
 ) {
   for variable in template_environment_variables.iter()
   {
-    let variable_value_unwrapped = environment_variables.get(&variable.key);
-
-    let variable_value = match variable_value_unwrapped
+    if !variable.default_value.trim().is_empty()
     {
-      Some(variable) => variable.value.clone(),
-      None => String::new(),
+      validate_value(variable, &variable.default_value, ValueKind::DefaultValue);
+    }
+
+    let variable_value = match environment_variables.get(&variable.key)
+    {
+      Some(v) => {
+        if v.value.trim().is_empty()
+        {
+          if variable.required == true
+          {
+            emit_error!("missing value for key '{}' in file '{}'", v.key, env_filename);
+          }
+          continue;
+        }
+        &v.value
+      },
+      None => {
+        if variable.required == true
+        {
+          emit_error!("missing value for key '{}' in file '{}'", variable.key, env_filename);
+        }
+        continue;
+      }
     };
 
-    if variable_value.trim().is_empty()
-    {
-      if variable.required == true
-      {
-        emit_error!("missing value for key '{}' in file '{}'", variable.key, env_filename);
-      }
-      continue;
-    }
+    validate_value(variable, variable_value, ValueKind::Value);
+  }
+}
 
-    if variable.env_type == VariableType::Boolean
-    {
-      validate_boolean_value(&variable_value, &variable.key);
-    }
-    else if variable.env_type == VariableType::String
-    {
-      validate_string_value(&variable_value, &variable.regex, &variable.key);
-    }
-    else if variable.env_type == VariableType::Integer
-    {
-      validate_integer(&variable_value, &variable.range, &variable.key);
-    }
-    else if variable.env_type == VariableType::Float
-    {
-      validate_float(&variable_value, &variable.range, &variable.key);
-    }
+pub fn validate_value(
+  template_variable: &Variable,
+  value: &String,
+  value_kind: ValueKind
+) {
+  match template_variable.env_type
+  {
+    VariableType::Boolean => validate_boolean(&value, &template_variable.key, value_kind),
+    VariableType::String => validate_string(&value, &template_variable.regex, &template_variable.key, value_kind),
+    VariableType::Integer => validate_integer(&value, &template_variable.range, &template_variable.key, value_kind),
+    VariableType::Float => validate_float(&value, &template_variable.range, &template_variable.key, value_kind),
+    _ => {},
   }
 }
 
 /// Validate the boolean value
-fn validate_boolean_value(value: &str, key: &str)
+fn validate_boolean(value: &str, key: &str, value_kind: ValueKind)
 {
   let normalized = value.trim().to_ascii_lowercase();
   let parsed = match normalized.as_str() {
-      "1" | "t" | "true" => Ok(true),
-      "0" | "f" | "false" => Ok(false),
-      _ => Err(()),
+    "1" | "t" | "true" => Ok(true),
+    "0" | "f" | "false" => Ok(false),
+    _ => Err(()),
   };
 
   if parsed.is_err() {
-      emit_error!("value for key '{}' is not a valid boolean. expected '1', 't', 'T', 'TRUE', 'true', 'True', '0', 'f', 'F', 'FALSE', 'false', 'False'", key);
+    emit_error!("{} for key '{}' is not a valid boolean. expected '1', 't', 'T', 'TRUE', 'true', 'True', '0', 'f', 'F', 'FALSE', 'false', 'False'", value_kind.as_str(), key);
   }
 }
 
 /// Valodate the string value
-fn validate_string_value(value: &str, regex: &Regex, key: &str)
+fn validate_string(value: &str, regex: &Regex, key: &str, value_kind: ValueKind)
 {
   if !regex.as_str().is_empty()
   {
     if !regex.is_match(value)
     {
-      emit_error!("value for key '{}' does not match the regex '{}'", key, regex.as_str());
+      emit_error!("{} for key '{}' does not match the regex '{}'", value_kind.as_str(), key, regex.as_str());
     }
   }
 }
 
 /// Validate the integer value
-fn validate_integer(value: &str, range_list: &VariableRangeList, key: &str)
+fn validate_integer(value: &str, range_list: &VariableRangeList, key: &str, value_kind: ValueKind)
 {
   let integer_value = match value.parse::<i128>()
   {
     Ok(value) => value,
     Err(_) =>
     {
-      emit_error!("value for key '{}' is not an integer", key);
+      emit_error!("{} for key '{}' is not an integer", value_kind.as_str(), key);
     },
   };
   if range_list.ranges.len() > 0 
@@ -104,20 +128,20 @@ fn validate_integer(value: &str, range_list: &VariableRangeList, key: &str)
   
     if is_in_range == false
     {
-      emit_error!("value for key '{}' is not in the range '{}'", key, range_list.raw);
+      emit_error!("{} for key '{}' is not in the range '{}'", value_kind.as_str(), key, range_list.raw);
     }
   }
 }
 
 /// Validate the float value
-fn validate_float(value: &str, range_list: &VariableRangeList, key: &str)
+fn validate_float(value: &str, range_list: &VariableRangeList, key: &str, value_kind: ValueKind)
 {
   let float_value = match value.parse::<f64>()
   {
     Ok(value) => value,
     Err(_) =>
     {
-      emit_error!("value for key '{}' is not a float", key);
+      emit_error!("{} for key '{}' is not a float", value_kind.as_str(), key);
     },
   };
 
@@ -138,7 +162,7 @@ fn validate_float(value: &str, range_list: &VariableRangeList, key: &str)
   
     if in_range_status == false
     {
-      emit_error!("value for key '{}' is not in the range '{}'", key, range_list.raw);
+      emit_error!("{} for key '{}' is not in the range '{}'", value_kind.as_str(), key, range_list.raw);
     }
   }
 }

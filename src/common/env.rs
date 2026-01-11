@@ -20,6 +20,8 @@ pub struct Variable
   pub regex: Regex,
   /// Environment variable range
   pub range: VariableRangeList,
+  /// Environment variable default value
+  pub default_value: String,
   /// Environment variable value
   pub value: String,
 }
@@ -36,6 +38,7 @@ impl Variable
       env_type: VariableType::Unknown,
       regex: Regex::new("").unwrap(),
       range: VariableRangeList::new(),
+      default_value: String::new(),
       value: String::new(),
     }
   }
@@ -78,6 +81,11 @@ impl Variable
   pub fn set_range(&mut self, range: VariableRangeList) -> ()
   {
     self.range = range;
+  }
+
+  pub fn set_default_value(&mut self, default_value: String) -> ()
+  {
+    self.default_value = default_value;
   }
 }
 
@@ -133,6 +141,7 @@ pub enum VariableTag
   Type,
   Regex,
   Range,
+  Default,
 }
 
 impl FromStr for VariableTag
@@ -149,6 +158,7 @@ impl FromStr for VariableTag
       "type" => Ok(VariableTag::Type),
       "regex" => Ok(VariableTag::Regex),
       "range" => Ok(VariableTag::Range),
+      "default" => Ok(VariableTag::Default),
       _ => Err(()),
     }
   }
@@ -166,6 +176,7 @@ impl ToString for VariableTag
       VariableTag::Type => String::from("type"),
       VariableTag::Regex => String::from("regex"),
       VariableTag::Range => String::from("range"),
+      VariableTag::Default => String::from("default"),
     }
   }
 }
