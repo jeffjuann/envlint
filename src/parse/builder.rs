@@ -102,7 +102,9 @@ pub fn build_env(variable: &HashMap<String, (String, u16)>, line_index: u16) -> 
   env.set_default_value(match variable.get("default")
   {
     Some((default_value, line_index)) => {
-      emit_warn!("Variable '{}' is required but has a default value at line {}", env.key, line_index);
+      if env.required {
+        emit_warn!("Variable '{}' is required but has a default value at line {}", env.key, line_index);
+      }
       default_value.to_string()
     },
     None => String::new()
