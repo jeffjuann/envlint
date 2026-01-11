@@ -48,7 +48,7 @@ fn should_warn_when_has_required_tag()
 fn should_error_when_invalid_type_default_value()
 {
   let expected_status = false;
-  let expected_output = "error: default value for key 'EXAMPLE_ENV' is not an integer";
+  let expected_output = "error: default value for key 'EXAMPLE_ENV' is not a valid integer";
 
   let template_env_content = r#"
     #[title]="this is a title"

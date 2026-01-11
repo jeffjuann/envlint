@@ -62,6 +62,48 @@ fn should_error_when_invalid_type()
 }
 
 #[test]
+fn should_error_when_invalid_list_type()
+{
+  let expected_status = false;
+  let expected_output = "error: Variable 'EXAMPLE_ENV' has an unknown type 'list<invalid>' at line 4";
+
+  let template_env_content = r#"
+    #[title]="this is a title"
+    #[description]="This is a description"
+    #[type]=list<invalid>
+    EXAMPLE_ENV=
+  "#;
+
+  let env_content = r#"
+    EXAMPLE_ENV="example"
+  "#;
+
+  let mut test_environment = TestEnvironment::new();
+  test_environment.test_lint(env_content, template_env_content, &[], expected_status, expected_output);
+}
+
+#[test]
+fn should_error_when_list_type_is_nested()
+{
+  let expected_status = false;
+  let expected_output = "error: Variable 'EXAMPLE_ENV' defines a nested list type, which is not allowed, at line 4";
+
+  let template_env_content = r#"
+    #[title]="this is a title"
+    #[description]="This is a description"
+    #[type]=list<list<float>>
+    EXAMPLE_ENV=
+  "#;
+
+  let env_content = r#"
+    EXAMPLE_ENV="example"
+  "#;
+
+  let mut test_environment = TestEnvironment::new();
+  test_environment.test_lint(env_content, template_env_content, &[], expected_status, expected_output);
+}
+
+#[test]
 fn should_success_when_valid_string()
 {
   let expected_status = true;
@@ -149,7 +191,7 @@ fn should_success_when_valid_integer()
 fn should_error_when_invalid_integer()
 {
   let expected_status = false;
-  let expected_output = "error: value for key 'EXAMPLE_ENV' is not an integer";
+  let expected_output = "error: value for key 'EXAMPLE_ENV' is not a valid integer";
 
   let template_env_content = r#"
     #[title]="this is a title"
@@ -191,7 +233,7 @@ fn should_success_when_valid_float()
 fn should_error_when_invalid_float()
 {
   let expected_status = false;
-  let expected_output = "error: value for key 'EXAMPLE_ENV' is not a float";
+  let expected_output = "error: value for key 'EXAMPLE_ENV' is not a valid float";
   
   let template_env_content = r#"
     #[title]="this is a title"
@@ -202,6 +244,48 @@ fn should_error_when_invalid_float()
 
   let env_content = r#"
     EXAMPLE_ENV="123.four-five"
+  "#;
+
+  let mut test_environment = TestEnvironment::new();
+  test_environment.test_lint(env_content, template_env_content, &[], expected_status, expected_output);
+}
+
+#[test]
+fn should_success_when_valid_list()
+{
+  let expected_status = true;
+  let expected_output = "";
+
+  let template_env_content = r#"
+    #[title]="this is a title"
+    #[description]="This is a description"
+    #[type]=list<float>
+    EXAMPLE_ENV=
+  "#;
+
+  let env_content = r#"
+    EXAMPLE_ENV=123.45,789.01
+  "#;
+
+  let mut test_environment = TestEnvironment::new();
+  test_environment.test_lint(env_content, template_env_content, &[], expected_status, expected_output);
+}
+
+#[test]
+fn should_error_when_invalid_list()
+{
+  let expected_status = false;
+  let expected_output = "error: value for key 'EXAMPLE_ENV' is not a valid list of floats";
+  
+  let template_env_content = r#"
+    #[title]="this is a title"
+    #[description]="This is a description"
+    #[type]=list<float>
+    EXAMPLE_ENV=
+  "#;
+
+  let env_content = r#"
+    EXAMPLE_ENV="123.1,four.five,678.9,not_a_float"
   "#;
 
   let mut test_environment = TestEnvironment::new();

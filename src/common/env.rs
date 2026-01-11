@@ -1,5 +1,5 @@
 
-use std::str::FromStr;
+use std::{str::FromStr, fmt};
 
 use regex::Regex;
 
@@ -144,9 +144,14 @@ pub enum VariableTag
   Default,
 }
 
+pub enum VariableTagErrorKind
+{
+  Unknown(String),
+}
+
 impl FromStr for VariableTag
 {
-  type Err = ();
+  type Err = VariableTagErrorKind;
 
   fn from_str(value: &str) -> Result<Self, Self::Err>
   {
@@ -159,7 +164,7 @@ impl FromStr for VariableTag
       "regex" => Ok(VariableTag::Regex),
       "range" => Ok(VariableTag::Range),
       "default" => Ok(VariableTag::Default),
-      _ => Err(()),
+      _ => Err(VariableTagErrorKind::Unknown(value.to_string())),
     }
   }
 }
@@ -188,14 +193,20 @@ pub enum VariableType
   Integer,
   Float,
   Boolean,
+  List(Box<VariableType>),
   Unknown,
 }
 
-impl FromStr for VariableType
+#[derive(PartialEq)]
+pub enum VariableTypeErrorKind
 {
-  type Err = ();
+  Unknown(String),
+  DoubleNestedList
+}
 
-  fn from_str(value: &str) -> Result<Self, Self::Err>
+impl VariableType
+{
+  fn from_str_with_depth(value: &str, original_value: &str, depth: usize) -> Result<Self, VariableTypeErrorKind>
   {
     match value
     {
@@ -203,7 +214,52 @@ impl FromStr for VariableType
       "integer" => Ok(VariableType::Integer),
       "float" => Ok(VariableType::Float),
       "boolean" => Ok(VariableType::Boolean),
-      _ => Err(()),
+      _ => {
+        match value.strip_prefix("list<").and_then(|v| v.strip_suffix(">"))
+        {
+          Some(inner) =>
+          {
+            if depth > 0
+            {
+              Err(VariableTypeErrorKind::DoubleNestedList)
+            } 
+            else 
+            {
+              Ok(VariableType::List(
+                Box::new(Self::from_str_with_depth(inner, original_value, depth + 1)?)
+              ))
+            }
+          },
+          None => Err(VariableTypeErrorKind::Unknown(original_value.to_string()))
+        }
+      },
+    }
+  }
+}
+
+
+impl FromStr for VariableType
+{
+  type Err = VariableTypeErrorKind;
+
+  fn from_str(value: &str) -> Result<Self, Self::Err>
+  {
+    Self::from_str_with_depth(value, value, 0)
+  }
+}
+
+impl fmt::Display for VariableType 
+{
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
+  {
+    match self
+    {
+      VariableType::String => write!(f, "string"),
+      VariableType::Boolean => write!(f, "boolean"),
+      VariableType::Integer => write!(f, "integer"),
+      VariableType::Float => write!(f, "float"),
+      VariableType::List(generic) => write!(f, "list of {}s", generic),
+      VariableType::Unknown => write!(f, "unknown"),
     }
   }
 }

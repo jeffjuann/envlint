@@ -48,6 +48,7 @@ optional. type of the environment variable. can be one of the following:
 - integer
 - float
 - boolean
+- list<...> (a list of values of the specified type, where type must be one of primitives. Nested list types are not allowed)
 
 ### #[regex]
 
