@@ -1,3 +1,5 @@
+use crate::emit_warn;
+
 use super::Variable;
 
 pub struct VariableCollection 
@@ -19,8 +21,12 @@ impl VariableCollection
     self.variables.iter()
   }
 
-  pub fn add(&mut self, value: Variable)
+  pub fn add(&mut self, value: Variable, line_index: u16)
   {
+    if self.contains_key(&value.key) {
+      emit_warn!("Variable '{}' is defined more than once at line {}", value.key, line_index);
+      self.remove(&value.key);
+    }
     self.variables.push(value);
   }
 

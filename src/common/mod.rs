@@ -4,7 +4,7 @@ pub use file::{FileLine, LineType};
 
 mod env;
 
-pub use env::{Variable, VariableRangeList, VariableRange, VariableTag, VariableType, VariableMetadata};
+pub use env::{Variable, VariableRangeList, VariableRange, VariableTag, VariableTagErrorKind, VariableType, VariableTypeErrorKind, VariableMetadata};
 
 mod variable_collection;
 

@@ -1,14 +1,12 @@
 use std::{collections::HashMap, str::FromStr};
 
-use once_cell::sync::Lazy;
-
 use regex::Regex;
+
+use crate::parse::matcher;
 
 use crate::{emit_error, emit_info, emit_warn};
 
-use crate::common::{Variable, VariableType, VariableRangeList, VariableRange};
-
-pub static RANGE_MATCHER: Lazy<Regex> = Lazy::new(|| Regex::new(r#"^(\d+(\.\d+)?(\.\.\d+(\.\d+)?)?)(,(\d+(\.\d+)?(\.\.\d+(\.\d+)?)?))*$"#).unwrap());
+use crate::common::{Variable, VariableRange, VariableRangeList, VariableType, VariableTypeErrorKind};
 
 pub fn build_env(variable: &HashMap<String, (String, u16)>, line_index: u16) -> Variable
 {
@@ -117,9 +115,13 @@ pub fn build_env(variable: &HashMap<String, (String, u16)>, line_index: u16) -> 
       match VariableType::from_str(env_type_str)
       {
         Ok(env_type) => env_type,
-        Err(_) => 
+        Err(VariableTypeErrorKind::DoubleNestedList) => 
         {
-          emit_error!("Variable '{}' has an unknown type '{}' at line {}", env.key, env_type_str, line_index);
+          emit_error!("Variable '{}' defines a nested list type, which is not allowed, at line {}", env.key, line_index);
+        },
+        Err(VariableTypeErrorKind::Unknown(unknown_type)) => 
+        {
+          emit_error!("Variable '{}' has an unknown type '{}' at line {}", env.key, unknown_type, line_index);
         }
       }
     },
@@ -180,7 +182,7 @@ fn process_range(env: &Variable, range_str: &str, line_index: &u16) -> VariableR
   { 
     range.raw = range_str.to_string();
 
-    if !RANGE_MATCHER.is_match(range_str) {
+    if !matcher::RANGE_MATCHER.is_match(range_str) {
       emit_error!("Variable '{}' has an invalid range '{}' at line {}", env.key, range_str, line_index);
     }
 
