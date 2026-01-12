@@ -67,6 +67,29 @@ fn should_error_when_invalid_type()
 }
 
 #[test]
+fn should_warn_when_empty_range()
+{
+  let expected_status = false;
+  let expected_output =
+    "warn: Variable 'EXAMPLE_ENV' has an empty range";
+
+  let template_env_content = r#"
+    #[title]="this is a title"
+    #[description]="This is a description"
+    #[type]=integer
+    #[range]="     "
+    EXAMPLE_ENV=
+  "#;
+
+  let env_content = r#"
+    EXAMPLE_ENV="5"
+  "#;
+
+  let mut test_environment = TestEnvironment::new();
+  test_environment.test_lint(env_content, template_env_content, &[], expected_status, expected_output);
+}
+
+#[test]
 fn should_error_when_invalid_range()
 {
   let expected_status = false;
